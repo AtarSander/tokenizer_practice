@@ -28,6 +28,12 @@ class BasicTokenizer:
         self.merges[most_occuring_pair] = token_value
         self.vocab[token_value] = self.vocab[most_occuring_pair[0]] + self.vocab[most_occuring_pair[1]]
 
+    def get_stats(self, text):
+        counts = {}
+        for pair in zip(text, text[1:]):
+            counts[pair] = counts.get(pair, 0) + 1
+        return counts
+
     def merge(self, text, new_pair, new_pair_id):
         new_text = []
         i = 0
@@ -40,12 +46,6 @@ class BasicTokenizer:
                 i += 1
         return new_text
 
-    def get_stats(self, text):
-        counts = {}
-        for pair in zip(text, text[1:]):
-            counts[pair] = counts.get(pair, 0) + 1
-        return counts
-    
     def encode(self, text):
         ids = self.encode_to_utf8_list(text)
         while len(ids) >= 2:

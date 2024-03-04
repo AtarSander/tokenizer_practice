@@ -1,4 +1,30 @@
 class BasicTokenizer:
+    def train(self, text, vocab_size, verbose=False):
+        merges_num = vocab_size - 256
+        text_bytes =  self.encode_to_utf8_list(text)
+        self.merges = {}
+        self.vocab = {token_value: bytes([token_value]) for token_value in range(256)} 
+
+        for i in range(merges_num):
+            text_bytes, most_occuring_pair, token_value = self.train_step(text_bytes, i)
+            self.update_tokenizer_dicts(most_occuring_pair, token_value)
+            if verbose:
+                print(f"Merging {most_occuring_pair} into a new token {token_value}")
+
+    def encode_to_utf8_list(self, text):
+        return list(text.encode("utf-8"))
+
+    def train_step(self, text_bytes, index):
+        stats = self.get_stats(text_bytes)
+        most_occuring_pair = max(stats, key=stats.get)
+        token_value = 256 + index
+        text_bytes_updated = self.merge(text_bytes, most_occuring_pair, token_value)
+        return text_bytes_updated, most_occuring_pair, token_value
+        
+    def update_tokenizer_dicts(self, most_occuring_pair, token_value):
+        self.merges[most_occuring_pair] = token_value
+        self.vocab[token_value] = self.vocab[most_occuring_pair[0]] + self.vocab[most_occuring_pair[1]]
+        
     def merge(self, text, new_pair, new_pair_id):
         new_text = []
         i = 0
